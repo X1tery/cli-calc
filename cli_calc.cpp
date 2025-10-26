@@ -7,12 +7,20 @@
 
 std::string toBase(int num, int base) {
 	std::string baseRep;
+	bool isNegative = false;
+	if (num < 0) {
+		isNegative = true;
+		num *= -1;
+	} else if (num == 0) {
+		return "0";
+	}
 	while (num > 0) {
 		if(num % base > 9) baseRep.insert(baseRep.begin(), ((num % base) - 10) + 'A'); 
 		else baseRep.insert(baseRep.begin(), (num % base) + '0');
 		num /= base;
 	}
-	return baseRep;
+	if (isNegative) return ('-' + baseRep);
+	else return baseRep;
 }
 
 class Calculator {
