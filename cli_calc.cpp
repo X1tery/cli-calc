@@ -5,6 +5,16 @@
 #include <cassert>
 #include <cmath>
 
+std::string toBase(int num, int base) {
+	std::string baseRep;
+	while (num > 0) {
+		if(num % base > 9) baseRep.insert(baseRep.begin(), ((num % base) - 10) + 'A'); 
+		else baseRep.insert(baseRep.begin(), (num % base) + '0');
+		num /= base;
+	}
+	return baseRep;
+}
+
 class Calculator {
 private:
 int base;
@@ -175,23 +185,23 @@ double calculatePrefix(std::vector<Token> prefix_vector) {
 					double b = stack.pop(), a = stack.pop();
  					switch (token.value[0]) {
 						case '+':
-							if (verbose) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a + b << ";\n";
+							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a + b, base) << ";\n";
 							stack.push(a + b);
 							break;
 						case '-':
-							if (verbose) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a - b << ";\n";
+							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a - b, base) << ";\n";
 							stack.push(a - b);
 							break;
 						case '*':
-							if (verbose) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a * b << ";\n";
+							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a * b, base) << ";\n";
 							stack.push(a * b);
 							break;
 						case '/':
-							if (verbose) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a / b << ";\n";
+							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a / b, base) << ";\n";
 							stack.push(a / b);
 							break;
 						case '^':
-							if (verbose) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << std::pow(a, b) << ";\n";
+							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(std::pow(a, b), base) << ";\n";
 							stack.push(std::pow(a, b));
 							break;
 					}
@@ -222,39 +232,52 @@ double calculate(std::string source) {
 }
 };
 
-int main(int argc, char* argv[]) {
-	int base = 10;
-	bool verbose = false;
+bool processArguments(int argc, char* argv[], int& base, bool& verbose, bool& basetable) {
 	for (int i = 1; i < argc; i++) {
-		if ((std::string)argv[i] == "-b") {
+		if ((std::string)argv[i] == "-b" || (std::string)argv[i] == "--base") {
 			if (argc - i > 1) {
 				i++;
 				for (int j = 0; j < ((std::string)argv[i]).size(); j++) {
 					if (!(argv[i][j] >= '0' && argv[i][j] <= '9')) {
 						std::cout << "Invalid base\n";
-						return -1;
+						return 0;
 					}
 				}
 				base = std::stoi(argv[i]);
 				if (base < 2 || base > 36) base = 10;
 			} else {
 				std::cout << "Base not specified\n";
-				return -1;
+				return 0;
 			}
-		} else if ((std::string)argv[i] == "-v") {
+		} else if ((std::string)argv[i] == "-v" || (std::string)argv[i] == "--verbose") {
 			verbose = true;
+		} else if ((std::string)argv[i] == "-B" || (std::string)argv[i] == "--base-table") {
+			basetable = true;
 		} else {
 			std::cout << "Invalid argument \"" << argv[i] << "\"\n";
-			return -1;
+			return 0;
 		}
 	}
+
+	return 1;
+}
+
+int main(int argc, char* argv[]) {
+	int base = 10;
+	bool verbose = false;
+	bool use_base_table = false;
+	if (!processArguments(argc, argv, base, verbose, use_base_table)) return -1;
+
 	Calculator calculator(base, verbose);
 
 	std::string source(10, true);
 	std::cout << "Please enter a mathematical expression: ";
 	std::getline(std::cin, source);
+
 	double ans = calculator.calculate(source);
-	std::cout << source << " = " << ans << '\n';
+	if (use_base_table) std::cout << "(" << source << ")(" << base << ")\n-------------\nBIN | " << toBase(ans, 2) << "\nOCT | " << toBase(ans, 8) << "\nDEC | " << ans << "\nHEX | " << toBase(ans, 16) << '\n';
+	else if (base == 10) std::cout << source << " = " << ans << '\n';
+	else std::cout << "(" << source << ")(" << base << ") = " << toBase(ans, base) << '\n';
 
 	return 0;
 }
