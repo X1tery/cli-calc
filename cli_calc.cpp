@@ -42,6 +42,7 @@ const std::unordered_map<std::string, int> PRECENDENCE {
 	{"-", 1},
 	{"*", 2},
 	{"/", 2},
+	{"%", 2},
 	{"^", 3},
 };
 
@@ -102,6 +103,7 @@ std::vector<Token> tokenize(std::string source) {
 			case '-':
 			case '*':
 			case '/':
+			case '%':
 			case '^':
 				{
 				Token tmp(source[i], T_OP);
@@ -211,6 +213,11 @@ double calculatePrefix(std::vector<Token> prefix_vector) {
 							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a / b << ";\n";
 							else if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a / b, base) << ";\n";
 							stack.push(a / b);
+							break;
+						case '%':
+							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << std::fmod(a, b) << ";\n";
+							else if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(std::fmod(a, b), base) << ";\n";
+							stack.push(std::fmod(a, b));
 							break;
 						case '^':
 							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << std::pow(a, b) << ";\n";
