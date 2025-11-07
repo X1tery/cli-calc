@@ -193,23 +193,28 @@ double calculatePrefix(std::vector<Token> prefix_vector) {
 					double b = stack.pop(), a = stack.pop();
  					switch (token.value[0]) {
 						case '+':
-							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a + b, base) << ";\n";
+							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a + b << ";\n";
+							else if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a + b, base) << ";\n";
 							stack.push(a + b);
 							break;
 						case '-':
-							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a - b, base) << ";\n";
+							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a - b << ";\n";
+							else if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a - b, base) << ";\n";
 							stack.push(a - b);
 							break;
 						case '*':
-							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a * b, base) << ";\n";
+							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a * b << ";\n";
+							else if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a * b, base) << ";\n";
 							stack.push(a * b);
 							break;
 						case '/':
-							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a / b, base) << ";\n";
+							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a / b << ";\n";
+							else if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(a / b, base) << ";\n";
 							stack.push(a / b);
 							break;
 						case '^':
-							if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(std::pow(a, b), base) << ";\n";
+							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << std::pow(a, b) << ";\n";
+							else if (verbose) std::cout << op_num << ") " << toBase(a, base) << ' ' << token.value << ' ' << toBase(b, base) << " = " << toBase(std::pow(a, b), base) << ";\n";
 							stack.push(std::pow(a, b));
 							break;
 					}
