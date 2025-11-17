@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <stack>
 #include <vector>
 #include <cassert>
 #include <cmath>
@@ -59,32 +60,6 @@ struct Token {
 	enum TokenType type;
 	Token(std::string input_value = "", TokenType input_type = T_UNKNOWN) : value(input_value), type(input_type) {};
 	Token(char input_value, TokenType input_type = T_UNKNOWN) : value(std::string() + input_value), type(input_type) {};
-};
-
-template <typename T> class Stack {
-private:
-	int pos;
-	std::vector<T> s_vector;
-public:
-	Stack() : pos(-1) {};
-	void push(T n) {
-		pos++;
-		s_vector.push_back(n);
-	}
-	T pop() {
-		assert(pos >= 0);
-		T tmp = s_vector[pos];
-		s_vector.erase(s_vector.end());
-		pos--;
-		return tmp;
-	}
-	T peek() {
-		assert(pos >= 0);
-		return s_vector[pos];
-	}
-	int size() {
-		return pos + 1;
-	}
 };
 
 std::vector<Token> tokenize(std::string source) {
@@ -149,15 +124,18 @@ std::vector<Token> tokenize(std::string source) {
 
 std::vector<Token> toPrefix(const std::vector<Token>& token_vector) {
 	std::vector<Token> prefix_vector;
-	Stack<Token> stack;
+	std::stack<Token> stack;
 	for (Token token : token_vector) {
 		switch (token.type) {
 			case T_NUM:
 				prefix_vector.push_back(token);
 				break;
 			case T_OP:
-				if (stack.size() > 0 && stack.peek().type != T_LPAR && (PRECENDENCE.at(token.value) < PRECENDENCE.at(stack.peek().value))) {
-					while (stack.size() > 0 && stack.peek().type != T_LPAR && (PRECENDENCE.at(token.value) < PRECENDENCE.at(stack.peek().value))) prefix_vector.push_back(stack.pop());
+				if (stack.size() > 0 && stack.top().type != T_LPAR && (PRECENDENCE.at(token.value) < PRECENDENCE.at(stack.top().value))) {
+					while (stack.size() > 0 && stack.top().type != T_LPAR && (PRECENDENCE.at(token.value) < PRECENDENCE.at(stack.top().value))) {
+						prefix_vector.push_back(stack.top());
+						stack.pop();
+					}
 				}
 				stack.push(token);
 				break;
@@ -165,20 +143,23 @@ std::vector<Token> toPrefix(const std::vector<Token>& token_vector) {
 				stack.push(token);
 				break;
 			case T_RPAR:
-				while (stack.peek().type != T_LPAR) {
-					prefix_vector.push_back(stack.pop());
+				while (stack.top().type != T_LPAR) {
+					prefix_vector.push_back(stack.top());
+					stack.pop();
 				}
 				stack.pop();
 				break;
 		}
 	}
-	while (stack.size() > 0) prefix_vector.push_back(stack.pop());
-
+	while (stack.size() > 0) {
+		prefix_vector.push_back(stack.top());
+		stack.pop();
+	}
 	return prefix_vector;
 }
 
 double calculatePrefix(std::vector<Token> prefix_vector) {
-	Stack<double> stack;
+	std::stack<double> stack;
 	int op_num = 1;
 	for (Token token : prefix_vector) {
 		switch (token.type) {
@@ -188,11 +169,15 @@ double calculatePrefix(std::vector<Token> prefix_vector) {
 			case T_OP:
 				assert(stack.size() > 0);
 				if (stack.size() == 1 && token.value == "-") {
-					double a = stack.pop();
+					double a = stack.top();
+					stack.pop();
 					stack.push(-a);
 				}
 				else {
-					double b = stack.pop(), a = stack.pop();
+					double b = stack.top();
+					stack.pop();
+					double a = stack.top();
+					stack.pop();
  					switch (token.value[0]) {
 						case '+':
 							if (verbose && base == 10) std::cout << op_num << ") " << a << ' ' << token.value << ' ' << b << " = " << a + b << ";\n";
@@ -229,7 +214,7 @@ double calculatePrefix(std::vector<Token> prefix_vector) {
 				}
 		}
 	}
-	return stack.pop();
+	return stack.top();
 }
 
 public:
